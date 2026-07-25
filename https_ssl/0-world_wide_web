@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Displays DNS record information for specified subdomains of a domain.
+
+audit_subdomain() {
+    domain="$1"
+    subdomain="$2"
+
+    dig "${subdomain}.${domain}" |
+        awk -v subdomain="$subdomain" '
+            /ANSWER SECTION:/ {
+                getline
+                print "The subdomain " subdomain \
+                      " is a " $4 \
+                      " record and points to " $5
+            }
+        '
+}
+
+domain="$1"
+subdomain="$2"
+
+if [ -n "$subdomain" ]; then
+    audit_subdomain "$domain" "$subdomain"
+else
+    audit_subdomain "$domain" "www"
+    audit_subdomain "$domain" "lb-01"
+    audit_subdomain "$domain" "web-01"
+    audit_subdomain "$domain" "web-02"
+fi
